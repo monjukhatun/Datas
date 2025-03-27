@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FinTrack - Personal Finance Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --dark-color: #212529;
+            --light-color: #f8f9fa;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition-all: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f5f7fa;
+            color: #2d3748;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Disable zooming */
+        html {
+            touch-action: pan-x pan-y;
+            height: 100%;
+            overflow: auto;
+        }
+
+        /* Header Styles */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.5rem 1rem;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .current-date {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            position: relative;
+        }
+
+        /* Summary Cards */
+        .summary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-all);
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .summary-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            z-index: 1;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #718096;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-change {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .positive-change {
+            color: #38a169;
+        }
+
+        .negative-change {
+            color: #e53e3e;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-btn {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1.2rem 0.5rem;
+            font-weight: 600;
+            transition: var(--transition-all);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            color: var(--dark-color);
+            text-decoration: none !important;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .action-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            transition: var(--transition-all);
+        }
+
+        .action-btn:hover i {
+            transform: translateY(-3px);
+        }
+
+        .action-btn.add-cash {
+            color: var(--primary-color);
+        }
+
+        .action-btn.cash-out {
+            color: var(--danger-color);
+        }
+
+        .action-btn.reports {
+            color: var(--secondary-color);
+        }
+
+        /* Charts Section */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .charts-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-all);
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .chart-title i {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        /* Transactions Table */
+        .transactions-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .transactions-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .view-all-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: var(--transition-all);
+            text-decoration: none !important;
+        }
+
+        .view-all-btn:active {
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        .view-all-btn i {
+            margin-left: 0.3rem;
+            transition: var(--transition-all);
+        }
+
+        .view-all-btn:active i {
+            transform: translateX(3px);
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transactions-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #718096;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .transactions-table td {
+            padding: 1rem;
+            border-top: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .transaction-icon.income {
+            background: rgba(72, 187, 120, 0.1);
+            color: #48bb78;
+        }
+
+        .transaction-icon.expense {
+            background: rgba(245, 101, 101, 0.1);
+            color: #f56565;
+        }
+
+        .transaction-category {
+            background: #edf2f7;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .transaction-amount.income {
+            color: #48bb78;
+            font-weight: 600;
+        }
+
+        .transaction-amount.expense {
+            color: #f56565;
+            font-weight: 600;
+        }
+
+        .transaction-status {
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+        }
+
+        .status-completed {
+            background: rgba(72, 187, 120, 0.1);
+            color: #48bb78;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-value {
+                font-size: 1.5rem;
+            }
+            
+            .transactions-table th, 
+            .transactions-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        /* No Data State */
+        .no-transactions {
+            padding: 2rem;
+            text-align: center;
+            color: #a0aec0;
+        }
+
+        /* Loading State */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1 class="app-title">FinTrack</h1>
+            <div class="current-date">
+                <i class="bi bi-calendar"></i>
+                <span id="current-date">Loading...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Summary Cards -->
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="summary-card animate-fadeIn">
+                    <h3 class="card-title">Current Balance</h3>
+                    <div class="card-value" id="wallet-balance">$0.00</div>
+                    <div class="card-change positive-change">
+                        <i class="bi bi-arrow-up"></i>
+                        <span id="balance-change">$0.00 (0%)</span>
+                    </div>
+                    <i class="bi bi-wallet2 position-absolute top-1rem end-1rem opacity-10" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card animate-fadeIn delay-1">
+                    <h3 class="card-title">Total Income</h3>
+                    <div class="card-value" id="total-cash-in">$0.00</div>
+                    <div class="card-change positive-change">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <span>Last 30 days</span>
+                    </div>
+                    <i class="bi bi-cash-stack position-absolute top-1rem end-1rem opacity-10" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card animate-fadeIn delay-2">
+                    <h3 class="card-title">Total Expenses</h3>
+                    <div class="card-value" id="total-cash-out">$0.00</div>
+                    <div class="card-change negative-change">
+                        <i class="bi bi-graph-down-arrow"></i>
+                        <span>Last 30 days</span>
+                    </div>
+                    <i class="bi bi-credit-card position-absolute top-1rem end-1rem opacity-10" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons - Now Fully Clickable -->
+        <div class="action-buttons my-4">
+            <a href="addcash.html" class="action-btn add-cash animate-fadeIn delay-1">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Add Cash</span>
+            </a>
+            <a href="cashout.html" class="action-btn cash-out animate-fadeIn delay-2">
+                <i class="bi bi-dash-circle-fill"></i>
+                <span>Cash Out</span>
+            </a>
+            <a href="reports.html" class="action-btn reports animate-fadeIn delay-3">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Reports</span>
+            </a>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-container">
+            <div class="chart-card animate-fadeIn delay-2">
+                <h4 class="chart-title">
+                    <i class="bi bi-pie-chart-fill text-primary"></i>
+                    Income vs Expenses
+                </h4>
+                <div class="chart-wrapper">
+                    <canvas id="incomeExpenseChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card animate-fadeIn delay-3">
+                <h4 class="chart-title">
+                    <i class="bi bi-bar-chart-line-fill text-success"></i>
+                    Monthly Trend
+                </h4>
+                <div class="chart-wrapper">
+                    <canvas id="monthlyTrendChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card animate-fadeIn delay-4">
+                <h4 class="chart-title">
+                    <i class="bi bi-tag-fill text-danger"></i>
+                    Category Breakdown
+                </h4>
+                <div class="chart-wrapper">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="transactions-card animate-fadeIn delay-5">
+            <div class="transactions-header">
+                <h3 class="transactions-title">Recent Transactions</h3>
+                <a href="reports.html" class="view-all-btn">
+                    View All
+                    <i class="bi bi-arrow-right-short"></i>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-transactions">
+                        <tr>
+                            <td colspan="4" class="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Initialize the application when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+
+            // Initialize wallet data if not exists
+            if (!localStorage.getItem('walletData')) {
+                const initialData = {
+                    balance: 4850.75,
+                    totalCashIn: 6350.00,
+                    totalCashOut: 1500.25,
+                    transactions: [
+                        {
+                            id: 1,
+                            amount: 2500.00,
+                            category: "Salary",
+                            date: new Date().toISOString().split('T')[0],
+                            description: "Monthly Salary",
+                            type: "income"
+                        },
+                        {
+                            id: 2,
+                            amount: 300.50,
+                            category: "Shopping",
+                            date: new Date().toISOString().split('T')[0],
+                            description: "Online Purchase",
+                            type: "expense"
+                        },
+                        {
+                            id: 3,
+                            amount: 150.00,
+                            category: "Food",
+                            date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+                            description: "Grocery Shopping",
+                            type: "expense"
+                        },
+                        {
+                            id: 4,
+                            amount: 750.00,
+                            category: "Freelance",
+                            date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
+                            description: "Web Design Project",
+                            type: "income"
+                        },
+                        {
+                            id: 5,
+                            amount: 85.25,
+                            category: "Transportation",
+                            date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
+                            description: "Taxi Rides",
+                            type: "expense"
+                        }
+                    ]
+                };
+                localStorage.setItem('walletData', JSON.stringify(initialData));
+            }
+
+            // Load wallet data and initialize charts
+            loadWalletData();
+            initializeCharts();
+        });
+
+        function loadWalletData() {
+            const walletData = JSON.parse(localStorage.getItem('walletData'));
+            
+            // Update balance displays
+            document.getElementById('wallet-balance').textContent = formatCurrency(walletData.balance);
+            document.getElementById('total-cash-in').textContent = formatCurrency(walletData.totalCashIn);
+            document.getElementById('total-cash-out').textContent = formatCurrency(walletData.totalCashOut);
+            
+            // Update balance change indicator
+            updateBalanceChange(walletData);
+            
+            // Load recent transactions (last 5)
+            const recentTransactions = walletData.transactions.slice(0, 5);
+            loadTransactions(recentTransactions);
+            
+            // Animate balance numbers
+            animateValue('wallet-balance', 0, walletData.balance, 1000);
+   

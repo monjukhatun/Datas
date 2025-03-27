@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cash Out | FinTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --danger-color: #f72585;
+            --danger-light: #ff70a6;
+            --success-color: #4cc9f0;
+            --dark-color: #212529;
+            --light-color: #f8f9fa;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition-all: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f5f7fa;
+            color: #2d3748;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Disable zooming */
+        html {
+            touch-action: pan-x pan-y;
+            height: 100%;
+            overflow: auto;
+        }
+
+        /* Header Styles */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.5rem 1rem;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            margin-right: 1rem;
+            transition: var(--transition-all);
+        }
+
+        .back-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            position: relative;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-all);
+        }
+
+        .form-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--danger-color);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-title i {
+            margin-right: 0.75rem;
+        }
+
+        /* Balance Warning */
+        .balance-warning {
+            background-color: #fff5f7;
+            border-left: 4px solid var(--danger-color);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .balance-warning i {
+            color: var(--danger-color);
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        .balance-warning-text {
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+        .current-balance {
+            font-weight: 700;
+            color: var(--danger-color);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+            color: #4a5568;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: var(--transition-all);
+        }
+
+        .form-control:focus {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 3px rgba(247, 37, 133, 0.2);
+            outline: none;
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group-text {
+            position: absolute;
+            left: 1rem;
+            font-weight: 600;
+            color: #718096;
+        }
+
+        .amount-input {
+            padding-left: 3rem !important;
+        }
+
+        /* Category Selector */
+        .category-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (min-width: 576px) {
+            .category-options {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .category-option {
+            display: none;
+        }
+
+        .category-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 0.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition-all);
+            text-align: center;
+        }
+
+        .category-option:checked + .category-label {
+            border-color: var(--danger-color);
+            background-color: rgba(247, 37, 133, 0.05);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(247, 37, 133, 0.1);
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--danger-color);
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            background: linear-gradient(135deg, var(--danger-color), var(--danger-light));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: var(--transition-all);
+            box-shadow: 0 4px 6px rgba(247, 37, 133, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(247, 37, 133, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .submit-btn:hover::after {
+            left: 100%;
+        }
+
+        /* Error Message */
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 576px) {
+            .form-card {
+                padding: 1.5rem;
+            }
+            
+            .form-title {
+                font-size: 1.3rem;
+            }
+            
+            .category-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <button class="back-btn" id="back-button">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <h1 class="app-title">Cash Out</h1>
+            <div style="width: 48px;"></div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="form-card">
+            <h2 class="form-title">
+                <i class="bi bi-dash-circle-fill"></i>
+                Deduct from Wallet
+            </h2>
+            
+            <!-- Balance Warning -->
+            <div class="balance-warning">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div class="balance-warning-text">
+                    Current balance: <span class="current-balance" id="current-balance">$0.00</span>. 
+                    You cannot cash out more than your available balance.
+                </div>
+            </div>
+            
+            <form id="cash-out-form">
+                <!-- Amount Input -->
+                <div class="form-group">
+                    <label for="amount" class="form-label">Amount to Deduct</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" 
+                               id="amount" 
+                               class="form-control amount-input" 
+                               placeholder="0.00" 
+                               step="0.01" 
+                               min="0.01" 
+                               required
+                               oninput="validateAmount()">
+                    </div>
+                    <div class="error-message" id="amount-error"></div>
+                </div>
+                
+                <!-- Category Selection -->
+                <div class="form-group">
+                    <label class="form-label">Expense Category</label>
+                    <div class="category-options">
+                        <!-- Food -->
+                        <input type="radio" name="category" id="food" value="Food" class="category-option" checked>
+                        <label for="food" class="category-label">
+                            <i class="bi bi-egg-fried category-icon"></i>
+                            Food
+                        </label>
+                        
+                        <!-- Shopping -->
+                        <input type="radio" name="category" id="shopping" value="Shopping" class="category-option">
+                        <label for="shopping" class="category-label">
+                            <i class="bi bi-bag category-icon"></i>
+                            Shopping
+                        </label>
+                        
+                        <!-- Bills -->
+                        <input type="radio" name="category" id="bills" value="Bills" class="category-option">
+                        <label for="bills" class="category-label">
+                            <i class="bi bi-receipt category-icon"></i>
+                            Bills
+                        </label>
+                        
+                        <!-- Transportation -->
+                        <input type="radio" name="category" id="transportation" value="Transportation" class="category-option">
+                        <label for="transportation" class="category-label">
+                            <i class="bi bi-bus-front category-icon"></i>
+                            Transportation
+                        </label>
+                        
+                        <!-- Entertainment -->
+                        <input type="radio" name="category" id="entertainment" value="Entertainment" class="category-option">
+                        <label for="entertainment" class="category-label">
+                            <i class="bi bi-controller category-icon"></i>
+                            Entertainment
+                        </label>
+                        
+                        <!-- Other -->
+                        <input type="radio" name="category" id="other" value="Other" class="category-option">
+                        <label for="other" class="category-label">
+                            <i class="bi bi-three-dots category-icon"></i>
+                            Other
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Note Input -->
+                <div class="form-group">
+                    <label for="note" class="form-label">Note (Optional)</label>
+                    <textarea id="note" class="form-control" rows="3" placeholder="Add a note about this expense"></textarea>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn">
+                    <i class="bi bi-dash-circle"></i> Confirm Cash Out
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <div class="mb-4">
+                        <div class="bg-success bg-opacity-10 d-inline-flex p-3 rounded-circle">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 2.5rem;"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-3">Success!</h3>
+                    <p class="text-muted mb-4" id="success-message">Cash deducted successfully from your wallet</p>
+                    <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" id="success-ok-btn">
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Initialize the application when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date as default
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Initialize modal
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            
+            // Back button functionality
+            document.getElementById('back-button').addEventListener('click', function() {
+                window.history.back();
+            });
+            
+            // Load current balance
+            updateCurrentBalance();
+            
+            // Form submission
+            document.getElementById('cash-out-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const amount = parseFloat(document.getElementById('amount').value);
+                const category = document.querySelector('input[name="category"]:checked').value;
+                const note = document.getElementById('note').value || 'No note';
+                const date = today;
+                
+                // Validate amount
+                if (!validateAmount(amount)) {
+                    return;
+                }
+                
+                try {
+                    // Add transaction to wallet
+                    const transaction = WalletManager.addTransaction(amount, category, date, note, 'expense');
+                    
+                    // Show success message
+                    document.getElementById('success-message').textContent = 
+                        `Successfully deducted $${amount.toFixed(2)} from your wallet!`;
+                    successModal.show();
+                    
+                    // Update current balance display
+                    updateCurrentBalance();
+                    
+                    // Reset form
+                    this.reset();
+                } catch (error) {
+                    // Show error message
+                    document.getElementById('amount-error').textContent = error.message;
+                    document.getElementById('amount-error').style.display = 'block';
+                }
+            });
+            
+            // Success modal button
+            document.getElementById('success-ok-btn').addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+        });
+
+        // Update current balance display
+        function updateCurrentBalance() {
+            const balance = WalletManager.getBalance();
+            document.getElementById('current-balance').textContent = WalletManager.formatCurrency(balance);
+        }
+
+        // Validate amount against current balance
+        function validateAmount(amount = null) {
+            amount = amount || parseFloat(document.getElementById('amount').value);
+            const balance = WalletManager.getBalance();
+            const errorElement = document.getElementById('amount-error');
+            
+            // Hide error initially
+            errorElement.style.display = 'none';
+            
+            // Check if amount is empty
+            if (document.getElementById('amount').value === '') {
+                return false;
+            }
+            
+            if (isNaN(amount)) {
+                errorElement.textContent = 'Please enter a valid amount';
+                errorElement.style.display = 'block';
+                return false;
+            }
+            
+            if (amount <= 0) {
+                errorElement.textContent = 'Amount must be greater than zero';
+                errorElement.style.display = 'block';
+                return false;
+            }
+            
+            if (amount > balance) {
+                errorElement.textContent = 'Amount cannot exceed your current balance';
+                errorElement.style.display = 'block';
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
+</body>
+</html>
